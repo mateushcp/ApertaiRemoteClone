@@ -13,7 +13,7 @@ def get_local_ip_and_gateway():
             addresses = netifaces.ifaddresses(interface)
             if netifaces.AF_INET in addresses:
                 for addr in addresses[netifaces.AF_INET]:
-                    if addr['addr'].startswith(default_gateway.rsplit('.', 1)[0]):
+                    if 'addr' in addr and addr['addr'].startswith(default_gateway.rsplit('.', 1)[0]):
                         local_ip = addr['addr']
                         break
     return local_ip, default_gateway
