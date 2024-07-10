@@ -2,22 +2,28 @@ from scapy.all import ARP, Ether, srp
 import nmap
 import netifaces
 
-def get_local_ip():
-    # Get the local IP address using netifaces
+def get_local_ip_and_gateway():
+    # Get the local IP address and gateway using netifaces
+    gateways = netifaces.gateways()
+    default_gateway = gateways['default'][netifaces.AF_INET][0]
     interfaces = netifaces.interfaces()
+    local_ip = None
     for interface in interfaces:
         if interface != 'lo':  # Skip the loopback interface
             addresses = netifaces.ifaddresses(interface)
             if netifaces.AF_INET in addresses:
-                return addresses[netifaces.AF_INET][0]['addr']
-    return None
+                for addr in addresses[netifaces.AF_INET]:
+                    if addr['addr'].startswith(default_gateway.rsplit('.', 1)[0]):
+                        local_ip = addr['addr']
+                        break
+    return local_ip, default_gateway
 
 def get_local_ip_range():
-    local_ip = get_local_ip()
-    print(f"local_ip: {local_ip}")
+    local_ip, default_gateway = get_local_ip_and_gateway()
+    print(f"local_ip: {local_ip}, gateway: {default_gateway}")
     if not local_ip:
         return None
-    ip_parts = local_ip.split('.')
+    ip_parts = default_gateway.split('.')
     ip_parts[-1] = '0/24'
     return '.'.join(ip_parts)
 
