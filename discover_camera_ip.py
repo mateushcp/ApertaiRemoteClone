@@ -1,14 +1,30 @@
 from scapy.all import ARP, Ether, srp
 import nmap
+import netifaces
+
+def get_local_ip():
+    # Get the local IP address using netifaces
+    interfaces = netifaces.interfaces()
+    for interface in interfaces:
+        if interface != 'lo':  # Skip the loopback interface
+            addresses = netifaces.ifaddresses(interface)
+            if netifaces.AF_INET in addresses:
+                return addresses[netifaces.AF_INET][0]['addr']
+    return None
 
 def get_local_ip_range():
-    import socket
-    local_ip = socket.gethostbyname(socket.gethostname())
+    local_ip = get_local_ip()
+    print(f"local_ip: {local_ip}")
+    if not local_ip:
+        return None
     ip_parts = local_ip.split('.')
     ip_parts[-1] = '0/24'
     return '.'.join(ip_parts)
 
 def arp_scan(ip_range):
+    if not ip_range:
+        print("Invalid IP range.")
+        return []
     # Create ARP request
     arp = ARP(pdst=ip_range)
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
@@ -47,6 +63,9 @@ def scan_rtsp_ports(devices):
 def get_rtsp_ips():
     # Discover devices using ARP scan
     ip_range = get_local_ip_range()
+    if not ip_range:
+        print("Failed to determine the local IP range.")
+        return []
     devices = arp_scan(ip_range)
     print("Discovered devices:")
     for device in devices:
@@ -59,3 +78,7 @@ def get_rtsp_ips():
         print(f"IP: {device}")
 
     return rtsp_devices
+
+# Run the script
+if __name__ == "__main__":
+    get_rtsp_ips()
