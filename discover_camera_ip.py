@@ -23,7 +23,7 @@ def get_local_ip_range():
     print(f"local_ip: {local_ip}, gateway: {default_gateway}")
     if not local_ip:
         return None
-    ip_parts = default_gateway.split('.')
+    ip_parts = local_ip.split('.')
     ip_parts[-1] = '0/24'
     return '.'.join(ip_parts)
 
