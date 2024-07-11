@@ -44,6 +44,9 @@ def start_buffer_stream(buffer_number, cam_id):
         buffer_file
     ]
     process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, stderr = process.communicate()  # Wait for the command to complete and get the output
+    if process.returncode != 0:
+        print(f"FFmpeg error for {cam_id}: {stderr.decode()}")
     return {'process': process, 'file': buffer_file}
 
 def test_buffer_creation(cam_id, buffer_file):
@@ -123,7 +126,7 @@ def main():
     while True:
         for button_id, button in buttons.items():
             cam_id = button_id.replace("button", "cam")
-            if button.is_pressed:
+            if not button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
                 upload_to_google_cloud(final_video)
 
