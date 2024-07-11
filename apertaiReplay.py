@@ -25,12 +25,12 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_stream(buffer_number, cam_id, rtsp_url):
+def start_buffer_stream(buffer_number, cam_id):
     print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
     buffer_file = f'{cam_id}_buffer{buffer_number}-%03d.ts'
     buffer_command = [
         'ffmpeg',
-        '-i', rtsp_url,
+        '-i', cameras[cam_id],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -45,9 +45,9 @@ def start_buffer_streams():
     buffers = {}
     
     # Start buffer1 for all cameras
-    for cam_id, url in cameras.items():
+    for cam_id in cameras.keys():
         buffers[cam_id] = {
-            'buffer1': start_buffer_stream(1, cam_id, url)
+            'buffer1': start_buffer_stream(1, cam_id)
         }
     
     # Delay of 30 seconds before starting buffer2
@@ -55,8 +55,8 @@ def start_buffer_streams():
     time.sleep(30)
     
     # Start buffer2 for all cameras
-    for cam_id, url in cameras.items():
-        buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id, url)
+    for cam_id in cameras.keys():
+        buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id)
     
     # Test buffer creation
     for cam_id, buffer_info in buffers.items():
@@ -120,8 +120,7 @@ def main():
             cam_id = button_id.replace("button", "cam")
             if button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
-                if final_video:
-                    upload_to_google_cloud(final_video)
+                upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
     main()
