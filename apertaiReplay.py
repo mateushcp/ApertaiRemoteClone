@@ -10,7 +10,7 @@ from discover_camera_ip import get_rtsp_ips
 STATE = "mg"
 CITY = "belohorizonte"
 COURT = "duna"
-BUCKET_NAME = "videos-283812"
+BUCKET_NAME = "apertai-cloud"
 CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
@@ -25,9 +25,8 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_stream(rtsp_url, cam_id, buffer_number):
-    buffer_file = f'buffer{cam_id}-{buffer_number}.ts'
-    print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
+def start_buffer_stream(rtsp_url, buffer_file):
+    print(f"Starting buffer for {buffer_file} at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
         '-i', rtsp_url,
@@ -42,40 +41,40 @@ def start_buffer_stream(rtsp_url, cam_id, buffer_number):
     try:
         process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
-        print(f"Failed to start buffer stream {buffer_number} for {cam_id}: {e}")
-        return None, buffer_file
-    return process, buffer_file
+        print(f"Failed to start buffer stream {buffer_file}: {e}")
+        return None
+    return process
 
 def start_buffer_streams():
+    buffer_names = {
+        "cam1": ["buffer11.ts", "buffer12.ts"],
+        "cam2": ["buffer21.ts", "buffer22.ts"],
+        "cam3": ["buffer31.ts", "buffer32.ts"]
+    }
+
     for cam_id, url in cameras.items():
-        process1, buffer_file1 = start_buffer_stream(url, cam_id, 1)
+        process1 = start_buffer_stream(url, buffer_names[cam_id][0])
         if not process1:
             return False
-        buffers[cam_id] = {'buffer1': (process1, buffer_file1)}
+        buffers[cam_id] = {'buffer1': process1}
         start_times[cam_id] = datetime.now()
 
     time.sleep(30)
 
     for cam_id, url in cameras.items():
-        process2, buffer_file2 = start_buffer_stream(url, cam_id, 2)
+        process2 = start_buffer_stream(url, buffer_names[cam_id][1])
         if not process2:
             return False
-        buffers[cam_id]['buffer2'] = (process2, buffer_file2)
+        buffers[cam_id]['buffer2'] = process2
 
     # Verificar se todos os buffers foram criados
     for cam_id in cameras.keys():
-        for buffer_number in [1, 2]:
-            if not get_latest_buffer_file(cam_id, buffer_number):
-                print(f"Error: Buffer {buffer_number} for {cam_id} was not created correctly.")
+        for buffer_name in buffer_names[cam_id]:
+            if not os.path.isfile(buffer_name):
+                print(f"Error: Buffer {buffer_name} for {cam_id} was not created correctly.")
                 return False
     print("Buffers have been created. The program is ready to run.")
     return True
-
-def get_latest_buffer_file(cam_id, buffer_number):
-    buffer_file = f'buffer{cam_id}-{buffer_number}.ts'
-    if os.path.isfile(buffer_file):
-        return buffer_file
-    return None
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -86,8 +85,8 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     seconds_diff = diff.seconds % 60
 
     buffer_number = 2 if seconds_diff < 30 else 1
-    buffer_file = get_latest_buffer_file(cam_id, buffer_number)
-    if not buffer_file:
+    buffer_file = f'buffer{cam_id[-1]}{buffer_number}.ts'
+    if not os.path.isfile(buffer_file):
         print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
         return None
 
@@ -129,7 +128,8 @@ def main():
             cam_id = button_id.replace("button", "cam")
             if not button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
-                upload_to_google_cloud(final_video)
+                if final_video:
+                    upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
     main()
