@@ -25,8 +25,9 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_stream(rtsp_url, buffer_file):
-    print(f"Starting buffer {buffer_file} at {datetime.now()}")
+def start_buffer_stream(buffer_number, cam_id, rtsp_url):
+    print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
+    buffer_file = f'{cam_id}_buffer{buffer_number}-%03d.ts'
     buffer_command = [
         'ffmpeg',
         '-i', rtsp_url,
@@ -38,25 +39,25 @@ def start_buffer_stream(rtsp_url, buffer_file):
         '-reset_timestamps', '1',
         buffer_file
     ]
-    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-def start_buffers_for_cam(cam_id, rtsp_url):
-    buffers[cam_id] = {}
-
-    buffers[cam_id]['buffer1'] = start_buffer_stream(rtsp_url, f'{cam_id}_buffer1-%03d.ts')
-    start_times[cam_id] = datetime.now()
-    time.sleep(30)
-
-    buffers[cam_id]['buffer2'] = start_buffer_stream(rtsp_url, f'{cam_id}_buffer2-%03d.ts')
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE), buffer_file
 
 def start_buffer_streams():
     for cam_id, url in cameras.items():
-        start_buffers_for_cam(cam_id, url)
+        buffers[cam_id] = {
+            'buffer1': start_buffer_stream(1, cam_id, url)
+        }
+
+    # Delay of 30 seconds before starting buffer2
+    print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
+    time.sleep(30)
+    
+    for cam_id, url in cameras.items():
+        buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id, url)
 
     # Verify if all buffers were created
-    for cam_id in cameras.keys():
+    for cam_id, buffer_info in buffers.items():
         for buffer_number in [1, 2]:
-            buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
+            buffer_file = buffer_info[f'buffer{buffer_number}'][1].replace('%03d', '000')
             if not os.path.isfile(buffer_file):
                 print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
                 return False
