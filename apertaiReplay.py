@@ -25,9 +25,9 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_stream(rtsp_url, buffer_number):
-    buffer_file = f'buffer{buffer_number}-%03d.ts'
-    print(f"Starting buffer {buffer_number} for URL {rtsp_url} at {datetime.now()}")
+def start_buffer_stream(rtsp_url, cam_id, buffer_number):
+    buffer_file_pattern = f'{cam_id}_buffer{buffer_number}-%03d.ts'
+    print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
         '-i', rtsp_url,
@@ -37,22 +37,29 @@ def start_buffer_stream(rtsp_url, buffer_number):
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        buffer_file
+        buffer_file_pattern
     ]
     process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return process, buffer_file
+    return process, buffer_file_pattern
 
 def start_buffer_streams():
     for cam_id, url in cameras.items():
-        process1, buffer_file1 = start_buffer_stream(url, 1)
-        buffers[cam_id] = {'buffer1': (process1, buffer_file1)}
+        process1, buffer_file_pattern1 = start_buffer_stream(url, cam_id, 1)
+        buffers[cam_id] = {'buffer1': (process1, buffer_file_pattern1)}
         start_times[cam_id] = datetime.now()
 
     time.sleep(30)
 
     for cam_id, url in cameras.items():
-        process2, buffer_file2 = start_buffer_stream(url, 2)
-        buffers[cam_id]['buffer2'] = (process2, buffer_file2)
+        process2, buffer_file_pattern2 = start_buffer_stream(url, cam_id, 2)
+        buffers[cam_id]['buffer2'] = (process2, buffer_file_pattern2)
+
+def get_latest_buffer_file(cam_id, buffer_number):
+    buffer_file_pattern = f'{cam_id}_buffer{buffer_number}'
+    buffer_files = sorted([f for f in os.listdir() if f.startswith(buffer_file_pattern)])
+    if buffer_files:
+        return buffer_files[-1]
+    return None
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -62,8 +69,11 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     diff = datetime_now - datetime_start_recording
     seconds_diff = diff.seconds % 60
 
-    buffer_key = 'buffer2' if seconds_diff < 30 else 'buffer1'
-    buffer_file = buffers[cam_id][buffer_key][1]  # Get the buffer file name
+    buffer_number = 2 if seconds_diff < 30 else 1
+    buffer_file = get_latest_buffer_file(cam_id, buffer_number)
+    if not buffer_file:
+        print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
+        return None
 
     save_command = [
         'ffmpeg',
@@ -97,7 +107,8 @@ def main():
             cam_id = button_id.replace("button", "cam")
             if not button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
-                upload_to_google_cloud(final_video)
+                if final_video:
+                    upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
     main()
