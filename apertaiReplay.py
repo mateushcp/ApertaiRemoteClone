@@ -13,12 +13,8 @@ COURT = "duna"
 BUCKET_NAME = "apertai-cloud"
 CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
-# Define camera URLs
-cameras = {
-    "cam1": "rtsp://apertaiCam1:130355va@192.168.1.103/stream1",
-    "cam2": "rtsp://apertaiCam2:130355va@192.168.1.103/stream1",
-    "cam3": "rtsp://apertaiCam3:130355va@192.168.1.103/stream1"
-}
+# Define camera URLs (initially empty, to be filled with discovered IPs)
+cameras = {}
 
 # Setup for recording and buttons
 buffers = {}
@@ -83,12 +79,11 @@ def upload_to_google_cloud(file_name):
     print(f"Uploaded {file_name} to {BUCKET_NAME}")
     os.remove(file_name)
 
-
 def main():
     rtsp_devices = get_rtsp_ips()  # Descobre os IPs das câmeras RTSP
     # Atualiza as URLs das câmeras com os novos IPs
     for i, ip in enumerate(rtsp_devices):
-        cameras[f"cam{i+1}"] = f"rtsp://{ip}/stream1"
+        cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
     start_buffer_streams()  # Inicia a gravação
 
