@@ -26,7 +26,7 @@ buttons = {
 }
 
 def start_buffer_stream(rtsp_url, cam_id, buffer_number):
-    buffer_file_pattern = f'{cam_id}_buffer{buffer_number}-%03d.ts'
+    buffer_file = f'buffer{cam_id}-{buffer_number}.ts'
     print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
@@ -37,22 +37,30 @@ def start_buffer_stream(rtsp_url, cam_id, buffer_number):
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        buffer_file_pattern
+        buffer_file
     ]
-    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return process, buffer_file_pattern
+    try:
+        process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except Exception as e:
+        print(f"Failed to start buffer stream {buffer_number} for {cam_id}: {e}")
+        return None, buffer_file
+    return process, buffer_file
 
 def start_buffer_streams():
     for cam_id, url in cameras.items():
-        process1, buffer_file_pattern1 = start_buffer_stream(url, cam_id, 1)
-        buffers[cam_id] = {'buffer1': (process1, buffer_file_pattern1)}
+        process1, buffer_file1 = start_buffer_stream(url, cam_id, 1)
+        if not process1:
+            return False
+        buffers[cam_id] = {'buffer1': (process1, buffer_file1)}
         start_times[cam_id] = datetime.now()
 
     time.sleep(30)
 
     for cam_id, url in cameras.items():
-        process2, buffer_file_pattern2 = start_buffer_stream(url, cam_id, 2)
-        buffers[cam_id]['buffer2'] = (process2, buffer_file_pattern2)
+        process2, buffer_file2 = start_buffer_stream(url, cam_id, 2)
+        if not process2:
+            return False
+        buffers[cam_id]['buffer2'] = (process2, buffer_file2)
 
     # Verificar se todos os buffers foram criados
     for cam_id in cameras.keys():
@@ -64,10 +72,9 @@ def start_buffer_streams():
     return True
 
 def get_latest_buffer_file(cam_id, buffer_number):
-    buffer_file_pattern = f'{cam_id}_buffer{buffer_number}'
-    buffer_files = sorted([f for f in os.listdir() if f.startswith(buffer_file_pattern)])
-    if buffer_files:
-        return buffer_files[-1]
+    buffer_file = f'buffer{cam_id}-{buffer_number}.ts'
+    if os.path.isfile(buffer_file):
+        return buffer_file
     return None
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
