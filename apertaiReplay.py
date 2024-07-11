@@ -4,41 +4,76 @@ import time
 from datetime import datetime
 from google.cloud import storage
 from gpiozero import Button
+from discover_camera_ip import get_rtsp_ips
 
 # Configuration
 STATE = "mg"
 CITY = "belohorizonte"
 COURT = "duna"
-BUCKET_NAME = "apertai-cloud"
-CREDENTIALS_PATH = "C:/Users/Abidu/ApertAI/key.json"
+BUCKET_NAME = "videos-283812"
+CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
+# Define camera URLs (initially empty, to be filled with discovered IPs)
 cameras = {
     "cam1": "rtsp://apertaiCam1:130355va@192.168.0.23/stream1",
     "cam2": "rtsp://apertaiCam2:130355va@192.168.0.25/stream1",
     "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26/stream1"
 }
 
+# Setup for recording and buttons
+buffers = {}
+start_times = {}
 buttons = {
     "button1": Button(25),
     "button2": Button(24),
     "button3": Button(23)
 }
 
-def start_buffer_stream(cam_id, rtsp_url):
-    print(f"Starting buffer for {cam_id} at {datetime.now()}")
-    
+def start_buffer_stream(buffer_number, cam_id):
+    print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
+    buffer_file = f'{cam_id}_buffer{buffer_number}-%03d.ts'
     buffer_command = [
         'ffmpeg',
-        '-i', rtsp_url,
+        '-i', cameras[cam_id],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        f'{cam_id}_buffer-%03d.ts'
+        buffer_file
     ]
-    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, stderr = process.communicate()  # Wait for the command to complete and get the output
+    if process.returncode != 0:
+        print(f"FFmpeg error for {cam_id}: {stderr.decode()}")
+    return {'process': process, 'file': buffer_file}
+
+def test_buffer_creation(cam_id, buffer_file):
+    # Assuming buffer_file is correctly received as a string
+    buffer_file = buffer_file.replace('%03d', '000')
+    if os.path.exists(buffer_file):
+        print(f"Buffer {buffer_file} for {cam_id} was created successfully.")
+    else:
+        print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
+
+def start_buffer_streams():
+    buffers = {}
+    
+    for cam_id in cameras.keys():
+        buffers[cam_id] = {
+            'buffer1': start_buffer_stream(1, cam_id)
+        }
+        test_buffer_creation(cam_id, buffers[cam_id]['buffer1']['file'])  # Pass only the filename
+    
+    print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
+    time.sleep(30)
+    
+    for cam_id in cameras.keys():
+        buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id)
+        test_buffer_creation(cam_id, buffers[cam_id]['buffer2']['file'])  # Pass only the filename
+    
+    return buffers
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -47,12 +82,13 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     
     diff = datetime_now - datetime_start_recording
     seconds_diff = diff.seconds % 60
-    
-    if seconds_diff < 30:
-        buffer_file = f'{cam_id}_buffer-000.ts'
-    else:
-        buffer_file = f'{cam_id}_buffer-000.ts'
-    
+
+    buffer_number = 2 if seconds_diff < 30 else 1
+    buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
+    if not os.path.isfile(buffer_file):
+        print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
+        return None
+
     save_command = [
         'ffmpeg',
         '-sseof', '-30',
@@ -60,9 +96,8 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
         '-c', 'copy',
         output_file_name
     ]
-    
     subprocess.run(save_command, check=True)
-    print(f"Saved last 30 seconds: {output_file_name}")
+    print(f"Saved last 30 seconds from {cam_id}: {output_file_name}")
     return output_file_name
 
 def upload_to_google_cloud(file_name):
@@ -71,28 +106,29 @@ def upload_to_google_cloud(file_name):
     blob = bucket.blob(os.path.basename(file_name).replace("-", "/"))
     blob.upload_from_filename(file_name, content_type='application/octet-stream')
     print(f"Uploaded {file_name} to {BUCKET_NAME}")
-    os.remove(file_name)  # Clean up the local file
-
-def handle_button_press(cam_id, datetime_start_recording):
-    print(f"Button pressed for {cam_id}, saving last 30 seconds...")
-    final_video = save_last_30_seconds_from_buffer(cam_id, datetime_start_recording)
-    upload_to_google_cloud(final_video)
+    os.remove(file_name)
 
 def main():
-    print("Starting continuous buffer for RTSP streams...")
-    datetime_start_recording = datetime.now()
-    print(f"Started at: {datetime_start_recording}")
+    # rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
+    # if len(rtsp_devices) < 3:
+    #     print("Error: Not all camera IPs were found.")
+    #     return
 
-    for cam_id, rtsp_url in cameras.items():
-        start_buffer_stream(cam_id, rtsp_url)
-    
-    print("Buffers started. Press the corresponding button to save the last 30 seconds of video.")
+    # # Update camera URLs with new IPs
+    # for i, ip in enumerate(rtsp_devices):
+    #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
+
+    buffers = start_buffer_streams()  # Start recording and verify if all buffers were created
+    if not buffers:
+        print("Error: Not all buffers were created successfully.")
+        return
 
     while True:
-        for cam_id, button in buttons.items():
-            if button.is_pressed:
-                handle_button_press(cam_id, datetime_start_recording)
-                time.sleep(1)  # Debounce button press
+        for button_id, button in buttons.items():
+            cam_id = button_id.replace("button", "cam")
+            if not button.is_pressed:
+                final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
+                upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
     main()
