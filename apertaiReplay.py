@@ -41,6 +41,13 @@ def start_buffer_stream(buffer_number, cam_id):
     ]
     return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE), buffer_file
 
+def test_buffer_creation(cam_id, buffer_info):
+    buffer_file = buffer_info['file'].replace('%03d', '000')
+    if os.path.exists(buffer_file):
+        print(f"Buffer {buffer_file} for {cam_id} was created successfully.")
+    else:
+        print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
+
 def start_buffer_streams():
     buffers = {}
     
@@ -60,13 +67,9 @@ def start_buffer_streams():
     
     # Test buffer creation
     for cam_id, buffer_info in buffers.items():
-        for buffer_number in [1, 2]:
-            buffer_file = buffer_info[f'buffer{buffer_number}'][1].replace('%03d', '000')
-            if not os.path.isfile(buffer_file):
-                print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
-                return False
-    print("Buffers have been created. The program is ready to run.")
-    return True
+        test_buffer_creation(cam_id, buffer_info['buffer1'])
+        test_buffer_creation(cam_id, buffer_info['buffer2'])
+    return buffers
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -102,16 +105,17 @@ def upload_to_google_cloud(file_name):
     os.remove(file_name)
 
 def main():
-    rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
-    if len(rtsp_devices) < 3:
-        print("Error: Not all camera IPs were found.")
-        return
+    # rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
+    # if len(rtsp_devices) < 3:
+    #     print("Error: Not all camera IPs were found.")
+    #     return
 
-    # Update camera URLs with new IPs
-    for i, ip in enumerate(rtsp_devices):
-        cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
+    # # Update camera URLs with new IPs
+    # for i, ip in enumerate(rtsp_devices):
+    #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
-    if not start_buffer_streams():  # Start recording and verify if all buffers were created
+    buffers = start_buffer_streams()  # Start recording and verify if all buffers were created
+    if not buffers:
         print("Error: Not all buffers were created successfully.")
         return
 
