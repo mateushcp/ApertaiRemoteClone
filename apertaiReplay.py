@@ -10,7 +10,7 @@ from discover_camera_ip import get_rtsp_ips
 STATE = "mg"
 CITY = "belohorizonte"
 COURT = "duna"
-BUCKET_NAME = "apertai-cloud"
+BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
