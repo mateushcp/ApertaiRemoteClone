@@ -25,18 +25,8 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_streams():
-    for cam_id, url in cameras.items():
-        buffers[cam_id] = {
-            'buffer1': start_buffer_stream(url, 1),
-            'buffer2': start_buffer_stream(url, 2)
-        }
-        start_times[cam_id] = datetime.now()
-        time.sleep(30)
-
 def start_buffer_stream(rtsp_url, buffer_number):
     print(f"Starting buffer {buffer_number} for URL {rtsp_url} at {datetime.now()}")
-    buffer_file = f'buffer{buffer_number}-%03d.ts'
     buffer_command = [
         'ffmpeg',
         '-i', rtsp_url,
@@ -46,10 +36,19 @@ def start_buffer_stream(rtsp_url, buffer_number):
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        buffer_file
+        f'buffer{buffer_number}-%03d.ts'
     ]
-    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return {'process': process, 'file': buffer_file}
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+def start_buffer_streams():
+    for cam_id, url in cameras.items():
+        buffers[cam_id] = {'buffer1': start_buffer_stream(url, 1)}
+        start_times[cam_id] = datetime.now()
+
+    time.sleep(30)
+
+    for cam_id, url in cameras.items():
+        buffers[cam_id]['buffer2'] = start_buffer_stream(url, 2)
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -60,7 +59,7 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     seconds_diff = diff.seconds % 60
 
     buffer_key = 'buffer2' if seconds_diff < 30 else 'buffer1'
-    buffer_file = buffers[cam_id][buffer_key]['file']  # Use the stored buffer file name
+    buffer_file = buffers[cam_id][buffer_key].name  # Assuming you're storing the process and file names
 
     save_command = [
         'ffmpeg',
@@ -92,7 +91,7 @@ def main():
     while True:
         for button_id, button in buttons.items():
             cam_id = button_id.replace("button", "cam")
-            if button.is_pressed:
+            if not button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
                 upload_to_google_cloud(final_video)
 
