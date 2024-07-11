@@ -43,20 +43,20 @@ def start_buffer_stream(rtsp_url, buffer_file):
 def start_buffers_for_cam(cam_id, rtsp_url):
     buffers[cam_id] = {}
 
-    buffers[cam_id]['buffer1'] = start_buffer_stream(rtsp_url, f'buffer{cam_id[-1]}1.ts')
+    buffers[cam_id]['buffer1'] = start_buffer_stream(rtsp_url, f'{cam_id}_buffer1-%03d.ts')
     start_times[cam_id] = datetime.now()
     time.sleep(30)
 
-    buffers[cam_id]['buffer2'] = start_buffer_stream(rtsp_url, f'buffer{cam_id[-1]}2.ts')
+    buffers[cam_id]['buffer2'] = start_buffer_stream(rtsp_url, f'{cam_id}_buffer2-%03d.ts')
 
 def start_buffer_streams():
     for cam_id, url in cameras.items():
         start_buffers_for_cam(cam_id, url)
 
-    # Verificar se todos os buffers foram criados
+    # Verify if all buffers were created
     for cam_id in cameras.keys():
         for buffer_number in [1, 2]:
-            buffer_file = f'buffer{cam_id[-1]}{buffer_number}.ts'
+            buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
             if not os.path.isfile(buffer_file):
                 print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
                 return False
@@ -72,7 +72,7 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     seconds_diff = diff.seconds % 60
 
     buffer_number = 2 if seconds_diff < 30 else 1
-    buffer_file = f'buffer{cam_id[-1]}{buffer_number}.ts'
+    buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
     if not os.path.isfile(buffer_file):
         print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
         return None
@@ -97,23 +97,23 @@ def upload_to_google_cloud(file_name):
     os.remove(file_name)
 
 def main():
-    rtsp_devices = get_rtsp_ips()  # Descobre os IPs das câmeras RTSP
+    rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
     if len(rtsp_devices) < 3:
         print("Error: Not all camera IPs were found.")
         return
 
-    # Atualiza as URLs das câmeras com os novos IPs
+    # Update camera URLs with new IPs
     for i, ip in enumerate(rtsp_devices):
         cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
-    if not start_buffer_streams():  # Inicia a gravação e verifica se todos os buffers foram criados
+    if not start_buffer_streams():  # Start recording and verify if all buffers were created
         print("Error: Not all buffers were created successfully.")
         return
 
     while True:
         for button_id, button in buttons.items():
             cam_id = button_id.replace("button", "cam")
-            if not button.is_pressed:
+            if button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
                 if final_video:
                     upload_to_google_cloud(final_video)
