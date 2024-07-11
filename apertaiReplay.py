@@ -57,23 +57,22 @@ def start_buffer_streams():
     buffers = {}
     
     for cam_id in cameras.keys():
-        # Start the first buffer for the camera
         buffers[cam_id] = {
             'buffer1': start_buffer_stream(1, cam_id)
         }
-        
-        # Test the first buffer creation
-        test_buffer_creation(cam_id, buffers[cam_id]['buffer1']['file'])
-        
-        # Wait for 30 seconds before starting the second buffer
-        print(f"Waiting for 30 seconds before starting buffer 2 for camera {cam_id}...")
-        time.sleep(30)
-        
-        # Start the second buffer for the camera
+    
+    # Delay of 30 seconds before starting buffer2
+    print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
+    time.sleep(30)
+    
+    # Start buffer2 for all cameras
+    for cam_id in cameras.keys():
         buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id)
-        
-        # Test the second buffer creation
-        test_buffer_creation(cam_id, buffers[cam_id]['buffer2']['file'])
+    
+    # Test buffer creation
+    for cam_id, buffer_info in buffers.items():
+        test_buffer_creation(cam_id, buffer_info['buffer1'])
+        test_buffer_creation(cam_id, buffer_info['buffer2'])
     
     return buffers
 
