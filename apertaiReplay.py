@@ -122,8 +122,7 @@ def main():
             cam_id = button_id.replace("button", "cam")
             if not button.is_pressed:
                 final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
-                if final_video:
-                    upload_to_google_cloud(final_video)
+                upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
     main()
