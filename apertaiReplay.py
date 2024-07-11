@@ -54,6 +54,8 @@ def start_buffer_streams():
         process2, buffer_file_pattern2 = start_buffer_stream(url, cam_id, 2)
         buffers[cam_id]['buffer2'] = (process2, buffer_file_pattern2)
 
+    print("Buffers have been created. The program is ready to run.")
+
 def get_latest_buffer_file(cam_id, buffer_number):
     buffer_file_pattern = f'{cam_id}_buffer{buffer_number}'
     buffer_files = sorted([f for f in os.listdir() if f.startswith(buffer_file_pattern)])
@@ -96,6 +98,10 @@ def upload_to_google_cloud(file_name):
 
 def main():
     rtsp_devices = get_rtsp_ips()  # Descobre os IPs das câmeras RTSP
+    if len(rtsp_devices) < 3:
+        print("Error: Not all camera IPs were found.")
+        return
+
     # Atualiza as URLs das câmeras com os novos IPs
     for i, ip in enumerate(rtsp_devices):
         cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
