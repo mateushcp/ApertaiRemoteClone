@@ -26,6 +26,7 @@ buttons = {
 }
 
 def start_buffer_stream(rtsp_url, buffer_number):
+    buffer_file = f'buffer{buffer_number}-%03d.ts'
     print(f"Starting buffer {buffer_number} for URL {rtsp_url} at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
@@ -36,19 +37,22 @@ def start_buffer_stream(rtsp_url, buffer_number):
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        f'buffer{buffer_number}-%03d.ts'
+        buffer_file
     ]
-    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return process, buffer_file
 
 def start_buffer_streams():
     for cam_id, url in cameras.items():
-        buffers[cam_id] = {'buffer1': start_buffer_stream(url, 1)}
+        process1, buffer_file1 = start_buffer_stream(url, 1)
+        buffers[cam_id] = {'buffer1': (process1, buffer_file1)}
         start_times[cam_id] = datetime.now()
 
     time.sleep(30)
 
     for cam_id, url in cameras.items():
-        buffers[cam_id]['buffer2'] = start_buffer_stream(url, 2)
+        process2, buffer_file2 = start_buffer_stream(url, 2)
+        buffers[cam_id]['buffer2'] = (process2, buffer_file2)
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
@@ -59,12 +63,12 @@ def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     seconds_diff = diff.seconds % 60
 
     buffer_key = 'buffer2' if seconds_diff < 30 else 'buffer1'
-    buffer_file = buffers[cam_id][buffer_key].name  # Assuming you're storing the process and file names
+    buffer_file = buffers[cam_id][buffer_key][1]  # Get the buffer file name
 
     save_command = [
         'ffmpeg',
         '-sseof', '-30',
-        '-i', f'{buffer_file}',
+        '-i', buffer_file,
         '-c', 'copy',
         output_file_name
     ]
