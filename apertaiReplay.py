@@ -46,8 +46,9 @@ def start_buffer_stream(buffer_number, cam_id):
     process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return {'process': process, 'file': buffer_file}
 
-def test_buffer_creation(cam_id, buffer_info):
-    buffer_file = buffer_info['file'].replace('%03d', '000')
+def test_buffer_creation(cam_id, buffer_file):
+    # Assuming buffer_file is correctly received as a string
+    buffer_file = buffer_file.replace('%03d', '000')
     if os.path.exists(buffer_file):
         print(f"Buffer {buffer_file} for {cam_id} was created successfully.")
     else:
@@ -60,29 +61,16 @@ def start_buffer_streams():
         buffers[cam_id] = {
             'buffer1': start_buffer_stream(1, cam_id)
         }
+        test_buffer_creation(cam_id, buffers[cam_id]['buffer1']['file'])  # Pass only the filename
     
-    # Delay of 30 seconds before starting buffer2
     print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
     time.sleep(30)
     
-    # Start buffer2 for all cameras
     for cam_id in cameras.keys():
         buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id)
-    
-    # Test buffer creation
-    for cam_id, buffer_info in buffers.items():
-        test_buffer_creation(cam_id, buffer_info['buffer1'])
-        test_buffer_creation(cam_id, buffer_info['buffer2'])
+        test_buffer_creation(cam_id, buffers[cam_id]['buffer2']['file'])  # Pass only the filename
     
     return buffers
-
-def test_buffer_creation(cam_id, buffer_file):
-    buffer_file = buffer_file.replace('%03d', '000')
-    if os.path.exists(buffer_file):
-        print(f"Buffer {buffer_file} for {cam_id} was created successfully.")
-    else:
-        print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
-
 
 def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
     datetime_now = datetime.now()
