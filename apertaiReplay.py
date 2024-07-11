@@ -14,7 +14,11 @@ BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
-cameras = {}
+cameras = {
+    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.23/stream1",
+    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.25/stream1",
+    "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26/stream1"
+}
 
 # Setup for recording and buttons
 buffers = {}
