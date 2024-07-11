@@ -42,19 +42,23 @@ def start_buffer_stream(buffer_number, cam_id, rtsp_url):
     return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE), buffer_file
 
 def start_buffer_streams():
+    buffers = {}
+    
+    # Start buffer1 for all cameras
     for cam_id, url in cameras.items():
         buffers[cam_id] = {
             'buffer1': start_buffer_stream(1, cam_id, url)
         }
-
+    
     # Delay of 30 seconds before starting buffer2
     print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
     time.sleep(30)
     
+    # Start buffer2 for all cameras
     for cam_id, url in cameras.items():
         buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id, url)
-
-    # Verify if all buffers were created
+    
+    # Test buffer creation
     for cam_id, buffer_info in buffers.items():
         for buffer_number in [1, 2]:
             buffer_file = buffer_info[f'buffer{buffer_number}'][1].replace('%03d', '000')
