@@ -108,7 +108,7 @@ def main():
     print("Press the button on GPIO port 25 to save the last 30 seconds of video...")
 
     # Set up button press on GPIO port 24
-    button = Button(24, pull_up=False)
+    button = Button(24)
     
     while True:
         if not button.is_pressed:
