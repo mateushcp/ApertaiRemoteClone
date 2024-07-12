@@ -15,8 +15,8 @@ CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
 cameras = {
-    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.23/stream1",
-    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.25/stream1",
+    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.7/stream1",
+    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.8/stream1",
     "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26/stream1"
 }
 
