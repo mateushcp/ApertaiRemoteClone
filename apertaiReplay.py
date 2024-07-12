@@ -29,61 +29,103 @@ buttons = {
     "button3": Button(23)
 }
 
-def start_buffer_stream(buffer_number, cam_id):
-    print(f"Starting buffer {buffer_number} for {cam_id} at {datetime.now()}")
-    buffer_file = f'{cam_id}_buffer{buffer_number}-%03d.ts'
+# Initialize buffer streams for each camera and buffer
+def start_buffer_stream_1_1():
+    print(f"Starting buffer 1_1 for Camera 1 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras[cam_id],
+        '-i', cameras['cam1'],
+        '-map', '0',
+        '-c', 'copy',
+        '-f', 'segment',
+        '-segment_time', '60',  # Duration of each segment
+        '-segment_wrap', '1',  # Number of segments to wrap around
+        '-reset_timestamps', '1',  # Reset timestamps at the start of each segment
+        'buffer1_1-%03d.ts'  # Save segments with a numbering pattern
+    ]
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+def start_buffer_stream_1_2():
+    print(f"Starting buffer 1_2 for Camera 1 at {datetime.now()}")
+    buffer_command = [
+        'ffmpeg',
+        '-i', cameras['cam1'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
         '-segment_time', '60',
         '-segment_wrap', '1',
         '-reset_timestamps', '1',
-        buffer_file
+        'buffer1_2-%03d.ts'
     ]
-    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    _, stderr = process.communicate()  # Wait for the command to complete and get the output
-    if process.returncode != 0:
-        print(f"FFmpeg error for {cam_id}: {stderr.decode()}")
-    return {'process': process, 'file': buffer_file}
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-def test_buffer_creation(cam_id, buffer_file):
-    # Assuming buffer_file is correctly received as a string
-    buffer_file = buffer_file.replace('%03d', '000')
-    if os.path.exists(buffer_file):
-        print(f"Buffer {buffer_file} for {cam_id} was created successfully.")
-    else:
-        print(f"Error: Buffer {buffer_file} for {cam_id} was not created correctly.")
+def start_buffer_stream_2_1():
+    print(f"Starting buffer 2_1 for Camera 2 at {datetime.now()}")
+    buffer_command = [
+        'ffmpeg',
+        '-i', cameras['cam2'],
+        '-map', '0',
+        '-c', 'copy',
+        '-f', 'segment',
+        '-segment_time', '60',
+        '-segment_wrap', '1',
+        '-reset_timestamps', '1',
+        'buffer2_1-%03d.ts'
+    ]
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-def start_buffer_streams():
-    buffers = {}
-    
-    for cam_id in cameras.keys():
-        buffers[cam_id] = {
-            'buffer1': start_buffer_stream(1, cam_id)
-        }
-        test_buffer_creation(cam_id, buffers[cam_id]['buffer1']['file'])  # Pass only the filename
-    
-    print("Waiting for 30 seconds before starting buffer 2 for all cameras...")
-    time.sleep(30)
-    
-    for cam_id in cameras.keys():
-        buffers[cam_id]['buffer2'] = start_buffer_stream(2, cam_id)
-        test_buffer_creation(cam_id, buffers[cam_id]['buffer2']['file'])  # Pass only the filename
-    
-    return buffers
+def start_buffer_stream_2_2():
+    print(f"Starting buffer 2_2 for Camera 2 at {datetime.now()}")
+    buffer_command = [
+        'ffmpeg',
+        '-i', cameras['cam2'],
+        '-map', '0',
+        '-c', 'copy',
+        '-f', 'segment',
+        '-segment_time', '60',
+        '-segment_wrap', '1',
+        '-reset_timestamps', '1',
+        'buffer2_2-%03d.ts'
+    ]
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-def save_last_30_seconds_from_buffer(cam_id, datetime_start_recording):
+def start_buffer_stream_3_1():
+    print(f"Starting buffer 3_1 for Camera 3 at {datetime.now()}")
+    buffer_command = [
+        'ffmpeg',
+        '-i', cameras['cam3'],
+        '-map', '0',
+        '-c', 'copy',
+        '-f', 'segment',
+        '-segment_time', '60',
+        '-segment_wrap', '1',
+        '-reset_timestamps', '1',
+        'buffer3_1-%03d.ts'
+    ]
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+def start_buffer_stream_3_2():
+    print(f"Starting buffer 3_2 for Camera 3 at {datetime.now()}")
+    buffer_command = [
+        'ffmpeg',
+        '-i', cameras['cam3'],
+        '-map', '0',
+        '-c', 'copy',
+        '-f', 'segment',
+        '-segment_time', '60',
+        '-segment_wrap', '1',
+        '-reset_timestamps', '1',
+        'buffer3_2-%03d.ts'
+    ]
+    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+def save_last_30_seconds_from_buffer(cam_id):
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
     output_file_name = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{cam_id}-{datetime_now_formatted}.mp4")
     
-    diff = datetime_now - datetime_start_recording
-    seconds_diff = diff.seconds % 60
-
-    buffer_number = 2 if seconds_diff < 30 else 1
+    buffer_number = 1 if datetime_now.second < 30 else 2
     buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
     if not os.path.isfile(buffer_file):
         print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
@@ -114,20 +156,20 @@ def main():
     #     print("Error: Not all camera IPs were found.")
     #     return
 
-    # # Update camera URLs with new IPs
+    # Update camera URLs with new IPs
     # for i, ip in enumerate(rtsp_devices):
     #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
-    buffers = start_buffer_streams()  # Start recording and verify if all buffers were created
-    if not buffers:
-        print("Error: Not all buffers were created successfully.")
-        return
+    # Start buffer streams for all cameras
+    for i in range(1, 4):
+        buffers[f'cam{i}'] = [globals()[f'start_buffer_stream_{i}_1'](), globals()[f'start_buffer_stream_{i}_2']()]
 
     while True:
+        time.sleep(1)
         for button_id, button in buttons.items():
             cam_id = button_id.replace("button", "cam")
             if not button.is_pressed:
-                final_video = save_last_30_seconds_from_buffer(cam_id, start_times[cam_id])
+                final_video = save_last_30_seconds_from_buffer(cam_id)
                 upload_to_google_cloud(final_video)
 
 if __name__ == "__main__":
