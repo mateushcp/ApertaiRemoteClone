@@ -15,9 +15,9 @@ CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
 cameras = {
-    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.7/stream1",
-    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.8/stream1",
-    "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26/stream1"
+    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.7:554/h264/ch1/main/av_stream",
+    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.8:554/h264/ch1/main/av_stream",
+    "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26:554/h264/ch1/main/av_stream"
 }
 
 # Setup for recording and buttons
@@ -161,8 +161,20 @@ def main():
     #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
     # Start buffer streams for all cameras
+      for i in range(1, 4):
+        buffer_name_1 = f'start_buffer_stream_{i}_1'
+        buffers[f'cam{i}_1'] = globals()[buffer_name_1]()
+        print(f"Buffer {buffer_name_1} started.")
+
+    # Espera 30 segundos antes de iniciar os buffers com sufixo '_2'
+    print("Waiting 30 seconds before starting second buffers...")
+    time.sleep(30)
+
+    # Inicia os buffers com sufixo '_2' para cada câmera
     for i in range(1, 4):
-        buffers[f'cam{i}'] = [globals()[f'start_buffer_stream_{i}_1'](), globals()[f'start_buffer_stream_{i}_2']()]
+        buffer_name_2 = f'start_buffer_stream_{i}_2'
+        buffers[f'cam{i}_2'] = globals()[buffer_name_2]()
+        print(f"Buffer {buffer_name_2} started.")
 
     while True:
         time.sleep(1)
