@@ -150,6 +150,12 @@ def upload_to_google_cloud(file_name):
     print(f"Uploaded {file_name} to {BUCKET_NAME}")
     os.remove(file_name)
 
+def handle_camera_action(cam_id):
+    print(f"Handling action for {cam_id}")
+    final_video = save_last_30_seconds_from_buffer(cam_id)
+    if final_video:
+        upload_to_google_cloud(final_video)
+
 def main():
     # rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
     # if len(rtsp_devices) < 3:
@@ -161,7 +167,7 @@ def main():
     #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
 
     # Start buffer streams for all cameras
-      for i in range(1, 4):
+    for i in range(1, 4):
         buffer_name_1 = f'start_buffer_stream_{i}_1'
         buffers[f'cam{i}_1'] = globals()[buffer_name_1]()
         print(f"Buffer {buffer_name_1} started.")
@@ -177,12 +183,12 @@ def main():
         print(f"Buffer {buffer_name_2} started.")
 
     while True:
-        time.sleep(1)
-        for button_id, button in buttons.items():
-            cam_id = button_id.replace("button", "cam")
-            if not button.is_pressed:
-                final_video = save_last_30_seconds_from_buffer(cam_id)
-                upload_to_google_cloud(final_video)
+        if not buttons["button1"].is_pressed:
+            handle_camera_action("cam1")
+        if not buttons["button2"].is_pressed:
+            handle_camera_action("cam2")
+        if not buttons["button3"].is_pressed:
+            handle_camera_action("cam3")
 
 if __name__ == "__main__":
     main()
