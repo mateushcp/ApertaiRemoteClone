@@ -14,7 +14,7 @@ BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 def start_buffer_stream_1():
-    print(f"Starting buffer 1 at {datetime.now()}")
+    print(f"Starting cam1 buffer 1 at {datetime.now()}")
     
     # Command for continuous buffer that overwrites itself every 30 seconds
     buffer_command = [
@@ -31,7 +31,7 @@ def start_buffer_stream_1():
     return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def start_buffer_stream_2():
-    print(f"Starting buffer 2 at {datetime.now()}")
+    print(f"Starting cam1 buffer 2 at {datetime.now()}")
     
     # Command for continuous buffer that overwrites itself every 30 seconds
     buffer_command = [
