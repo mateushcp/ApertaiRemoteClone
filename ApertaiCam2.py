@@ -65,7 +65,7 @@ def save_last_30_seconds_from_buffer(datetime_start_recording):
         save_command = [
             'ffmpeg',
             '-sseof', '-30',
-            '-i', 'buffer2-000.ts',
+            '-i', 'cam-2-buffer-2-000.ts',
             '-c', 'copy',
             output_file_name
         ]
@@ -75,7 +75,7 @@ def save_last_30_seconds_from_buffer(datetime_start_recording):
         save_command = [
             'ffmpeg',
             '-sseof', '-30',
-            '-i', 'buffer1-000.ts',
+            '-i', 'cam-2-buffer-1-000.ts',
             '-c', 'copy',
             output_file_name
         ]
