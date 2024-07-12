@@ -158,40 +158,7 @@ def handle_camera_action(cam_id):
         upload_to_google_cloud(final_video)
 
 def main():
-    # rtsp_devices = get_rtsp_ips()  # Discover the IPs of the RTSP cameras
-    # if len(rtsp_devices) < 3:
-    #     print("Error: Not all camera IPs were found.")
-    #     return
-
-    # Update camera URLs with new IPs
-    # for i, ip in enumerate(rtsp_devices):
-    #     cameras[f"cam{i+1}"] = f"rtsp://apertaiCam{i+1}:130355va@{ip}/stream1"
-
-    # Start buffer streams for all cameras
-    for i in range(1, 4):
-        buffer_name_1 = f'start_buffer_stream_{i}_1'
-        buffers[f'cam{i}_1'] = globals()[buffer_name_1]()
-        print(f"Buffer {buffer_name_1} started.")
-
-    # Espera 30 segundos antes de iniciar os buffers com sufixo '_2'
-    print("Waiting 30 seconds before starting second buffers...")
-    time.sleep(30)
-
-    # Inicia os buffers com sufixo '_2' para cada câmera
-    for i in range(1, 4):
-        buffer_name_2 = f'start_buffer_stream_{i}_2'
-        buffers[f'cam{i}_2'] = globals()[buffer_name_2]()
-        print(f"Buffer {buffer_name_2} started.")
-
-    while True:
-        if not buttons["button1"].is_pressed:
-            handle_camera_action("1")
-        if not buttons["button2"].is_pressed:
-            handle_camera_action("2")
-        if not buttons["button3"].is_pressed:
-            handle_camera_action("3")
-
-        time.sleep(1)
-
+    upload_to_google_cloud("mg-belohorizonte-duna-cam3-03072024-100002.mp4")
+    
 if __name__ == "__main__":
     main()
