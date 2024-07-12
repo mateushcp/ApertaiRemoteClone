@@ -15,9 +15,9 @@ CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
 
 # Define camera URLs (initially empty, to be filled with discovered IPs)
 cameras = {
-    "cam1": "rtsp://apertaiCam1:130355va@192.168.0.7:554/h264/ch1/main/av_stream",
-    "cam2": "rtsp://apertaiCam2:130355va@192.168.0.8:554/h264/ch1/main/av_stream",
-    "cam3": "rtsp://apertaiCam3:130355va@192.168.0.26:554/h264/ch1/main/av_stream"
+    "1": "rtsp://apertaiCam1:130355va@192.168.0.7:554/h264/ch1/main/av_stream",
+    "2": "rtsp://apertaiCam2:130355va@192.168.0.8:554/h264/ch1/main/av_stream",
+    "3": "rtsp://apertaiCam3:130355va@192.168.0.26:554/h264/ch1/main/av_stream"
 }
 
 # Setup for recording and buttons
@@ -34,7 +34,7 @@ def start_buffer_stream_1_1():
     print(f"Starting buffer 1_1 for Camera 1 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam1'],
+        '-i', cameras['1'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -49,7 +49,7 @@ def start_buffer_stream_1_2():
     print(f"Starting buffer 1_2 for Camera 1 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam1'],
+        '-i', cameras['1'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -64,7 +64,7 @@ def start_buffer_stream_2_1():
     print(f"Starting buffer 2_1 for Camera 2 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam2'],
+        '-i', cameras['2'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -79,7 +79,7 @@ def start_buffer_stream_2_2():
     print(f"Starting buffer 2_2 for Camera 2 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam2'],
+        '-i', cameras['2'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -94,7 +94,7 @@ def start_buffer_stream_3_1():
     print(f"Starting buffer 3_1 for Camera 3 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam3'],
+        '-i', cameras['3'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -109,7 +109,7 @@ def start_buffer_stream_3_2():
     print(f"Starting buffer 3_2 for Camera 3 at {datetime.now()}")
     buffer_command = [
         'ffmpeg',
-        '-i', cameras['cam3'],
+        '-i', cameras['3'],
         '-map', '0',
         '-c', 'copy',
         '-f', 'segment',
@@ -185,11 +185,11 @@ def main():
 
     while True:
         if not buttons["button1"].is_pressed:
-            handle_camera_action("cam1")
+            handle_camera_action("1")
         if not buttons["button2"].is_pressed:
-            handle_camera_action("cam2")
+            handle_camera_action("2")
         if not buttons["button3"].is_pressed:
-            handle_camera_action("cam3")
+            handle_camera_action("3")
 
         time.sleep(1)
 
