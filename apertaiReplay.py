@@ -126,8 +126,9 @@ def save_last_30_seconds_from_buffer(cam_id):
     output_file_name = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{cam_id}-{datetime_now_formatted}.mp4")
     
     buffer_number = 1 if datetime_now.second < 30 else 2
-    buffer_file = f'{cam_id}_buffer{buffer_number}-000.ts'
+    buffer_file = f'buffer{cam_id}_{buffer_number}-000.ts'
     if not os.path.isfile(buffer_file):
+        print(buffer_file)
         print(f"No buffer file found for {cam_id}, buffer{buffer_number}")
         return None
 
@@ -189,6 +190,8 @@ def main():
             handle_camera_action("cam2")
         if not buttons["button3"].is_pressed:
             handle_camera_action("cam3")
+
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
