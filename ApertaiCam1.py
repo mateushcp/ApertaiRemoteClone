@@ -3,18 +3,18 @@ import os
 import time
 from datetime import datetime
 from google.cloud import storage
-from gpiozero import Button
+from pynput import keyboard
 
 # Configuration
 STATE = "mg"
 CITY = "belohorizonte"
 COURT = "duna"
-RTSP_URL = "rtsp://apertaiCam1:130355va@192.168.0.7:554/Streaming/Channels/101"
+RTSP_URL = "rtsp://apertaiCam1:130355va@10.0.0.133/stream1"
 BUCKET_NAME = "videos-283812"
-CREDENTIALS_PATH = "/home/apertai/Desktop/apertaiKeys.json"
+CREDENTIALS_PATH = "/Users/mateuscoelho/Downloads/key.json"
 
 def start_buffer_stream_1():
-    print(f"Starting cam1 buffer 1 at {datetime.now()}")
+    print(f"Starting buffer 1 at {datetime.now()}")
     
     # Command for continuous buffer that overwrites itself every 30 seconds
     buffer_command = [
@@ -31,7 +31,7 @@ def start_buffer_stream_1():
     return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def start_buffer_stream_2():
-    print(f"Starting cam1 buffer 2 at {datetime.now()}")
+    print(f"Starting buffer 2 at {datetime.now()}")
     
     # Command for continuous buffer that overwrites itself every 30 seconds
     buffer_command = [
@@ -93,9 +93,17 @@ def upload_to_google_cloud(file_name):
     print(f"Uploaded {file_name} to {BUCKET_NAME}")
     os.remove(file_name)  # Clean up the local file
 
+def on_press(key):
+    try:
+        if key.char == '1':
+            print("Saving last 30 seconds of video...")
+            final_video = save_last_30_seconds_from_buffer(datetime_start_recording)
+            upload_to_google_cloud(final_video)
+    except AttributeError:
+        pass
+
 def main():
     print("Starting continuous buffer for RTSP stream...")
-    global datetime_start_recording
     datetime_start_recording = datetime.now()
     print(f"Started at: {datetime.now()}")
     
@@ -105,17 +113,25 @@ def main():
     print(f"Done sleeping")
     start_buffer_stream_2()
     
-    print("Press the button on GPIO port 25 to save the last 30 seconds of video...")
+    print("Press '3' to save the last 30 seconds of video...")
 
-    # Set up button press on GPIO port 25
-    button = Button(25)
-    
-    while True:
-        if not button.is_pressed:
-            print("Button pressed! Saving last 30 seconds of video...")
-            final_video = save_last_30_seconds_from_buffer(datetime_start_recording)
-            upload_to_google_cloud(final_video)
-        time.sleep(0.1)
+    def on_press(key):
+        try:
+            if key.char == '3':
+                print("Saving last 30 seconds of video...")
+                final_video = save_last_30_seconds_from_buffer(datetime_start_recording)
+                upload_to_google_cloud(final_video)
+        except AttributeError:
+            pass
+
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+
+    try:
+        while True:
+            time.sleep(0.1)  # Keep the main thread alive
+    except KeyboardInterrupt:
+        listener.stop()
 
 if __name__ == "__main__":
     main()
