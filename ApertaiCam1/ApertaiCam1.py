@@ -3,7 +3,7 @@ import os
 import time
 from datetime import datetime
 from google.cloud import storage
-from pynput import keyboard
+from gpiozero import Button
 
 # Configuration
 STATE = "mg"
@@ -104,6 +104,7 @@ def on_press(key):
 
 def main():
     print("Starting continuous buffer for RTSP stream...")
+    global datetime_start_recording
     datetime_start_recording = datetime.now()
     print(f"Started at: {datetime.now()}")
     
@@ -113,25 +114,17 @@ def main():
     print(f"Done sleeping")
     start_buffer_stream_2()
     
-    print("Press '3' to save the last 30 seconds of video...")
+    print("Press the button on GPIO port 25 to save the last 30 seconds of video...")
 
-    def on_press(key):
-        try:
-            if key.char == '3':
-                print("Saving last 30 seconds of video...")
-                final_video = save_last_30_seconds_from_buffer(datetime_start_recording)
-                upload_to_google_cloud(final_video)
-        except AttributeError:
-            pass
-
-    listener = keyboard.Listener(on_press=on_press)
-    listener.start()
-
-    try:
-        while True:
-            time.sleep(0.1)  # Keep the main thread alive
-    except KeyboardInterrupt:
-        listener.stop()
+    # Set up button press on GPIO port 23
+    button = Button(23)
+    
+    while True:
+        if not button.is_pressed:
+            print("Button pressed! Saving last 30 seconds of video...")
+            final_video = save_last_30_seconds_from_buffer(datetime_start_recording)
+            upload_to_google_cloud(final_video)
+        time.sleep(0.1)
 
 if __name__ == "__main__":
     main()
