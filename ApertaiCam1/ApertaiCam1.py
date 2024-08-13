@@ -115,10 +115,10 @@ def main():
     start_buffer_stream_2()
     print("waiting for optimize")
     time.sleep(30)
-    print("Press the button on GPIO port 25 to save the last 30 seconds of video...")
+    print("Press the button on GPIO port 16 to save the last 30 seconds of video...")
 
-    # Set up button press on GPIO port 23
-    button = Button(23)
+    # Set up button press on GPIO port 16
+    button = Button(16)
     
     while True:
         if not button.is_pressed:
