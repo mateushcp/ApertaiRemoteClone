@@ -29,7 +29,6 @@ def start_buffer_stream_1():
         'cam-1-buffer-1-%03d.ts'  # Save segments with a numbering pattern
     ]
     process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    os.system('sync')
     return process
 
 def start_buffer_stream_2():
@@ -48,7 +47,6 @@ def start_buffer_stream_2():
         'cam-1-buffer-2-%03d.ts'  # Save segments with a numbering pattern
     ]
     process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    os.system('sync')
     return process
 
 def save_last_30_seconds_from_buffer(datetime_start_recording):
