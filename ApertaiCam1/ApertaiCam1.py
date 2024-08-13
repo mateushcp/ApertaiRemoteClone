@@ -28,7 +28,9 @@ def start_buffer_stream_1():
         '-reset_timestamps', '1',  # Reset timestamps at the start of each segment
         'cam-1-buffer-1-%03d.ts'  # Save segments with a numbering pattern
     ]
-    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.system('sync')
+    return process
 
 def start_buffer_stream_2():
     print(f"Starting buffer 2 at {datetime.now()}")
@@ -45,7 +47,9 @@ def start_buffer_stream_2():
         '-reset_timestamps', '1',  # Reset timestamps at the start of each segment
         'cam-1-buffer-2-%03d.ts'  # Save segments with a numbering pattern
     ]
-    return subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(buffer_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.system('sync')
+    return process
 
 def save_last_30_seconds_from_buffer(datetime_start_recording):
     datetime_now = datetime.now()
