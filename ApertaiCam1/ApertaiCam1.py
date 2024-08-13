@@ -11,7 +11,7 @@ CITY = "belohorizonte"
 COURT = "duna"
 RTSP_URL = "rtsp://apertaiCam1:130355va@10.0.0.133/stream1"
 BUCKET_NAME = "videos-283812"
-CREDENTIALS_PATH = "/Users/mateuscoelho/Downloads/key.json"
+CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 
 def start_buffer_stream_1():
     print(f"Starting buffer 1 at {datetime.now()}")
@@ -113,7 +113,8 @@ def main():
     time.sleep(30)
     print(f"Done sleeping")
     start_buffer_stream_2()
-    
+    print("waiting for optimize")
+    time.sleep(30)
     print("Press the button on GPIO port 25 to save the last 30 seconds of video...")
 
     # Set up button press on GPIO port 23
