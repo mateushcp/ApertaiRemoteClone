@@ -5,6 +5,7 @@ from datetime import datetime
 from google.cloud import storage
 from gpiozero import Button
 import numpy as np
+from threading import Lock
 
 # Configuration
 STATE = "mg"
@@ -15,6 +16,7 @@ BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 FRAME_RATE = 30  # Assuming 30 FPS
 BUFFER_SIZE = FRAME_RATE * 30  # 30 seconds of video
+buffer_lock = Lock()
 
 # Circular buffer to store frames
 frame_buffer = deque(maxlen=BUFFER_SIZE)
@@ -30,8 +32,9 @@ def capture_video():
         if not ret:
             break
 
-        # Add frame to buffer
-        frame_buffer.append(frame)
+        # Adquire lock antes de adicionar frame ao buffer
+        with buffer_lock:
+            frame_buffer.append(frame)
 
         time.sleep(1 / FRAME_RATE)
 
@@ -40,15 +43,14 @@ def save_last_30_seconds():
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
     output_file_name = f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}.mp4"
 
-    # Get the width and height of the frames
-    height, width, _ = frame_buffer[0].shape
+    # Adquire lock antes de iterar sobre o buffer
+    with buffer_lock:
+        height, width, _ = frame_buffer[0].shape
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(output_file_name, fourcc, FRAME_RATE, (width, height))
 
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_file_name, fourcc, FRAME_RATE, (width, height))
-
-    for frame in frame_buffer:
-        out.write(frame)
+        for frame in frame_buffer:
+            out.write(frame)
 
     out.release()
     print(f"Saved last 30 seconds: {output_file_name}")
