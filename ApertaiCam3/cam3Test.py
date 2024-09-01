@@ -1,3 +1,4 @@
+import time
 import subprocess
 import os
 from datetime import datetime
@@ -7,7 +8,7 @@ from gpiozero import Button
 # Configuration
 STATE = "mg"
 CITY = "belohorizonte"
-COURT = "duna"
+COURT = "sagradaBeach"
 BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam3"
@@ -20,7 +21,7 @@ def save_last_30_seconds_from_buffer():
     # Determina qual buffer usar baseando-se no segundo atual
     seconds = datetime_now.second
     buffer_id = '2' if seconds < 30 else '1'
-    input_file = os.path.join(BUFFER_PATH, f'cam-3-buffer-{buffer_id}-000.ts')
+    input_file = os.path.join(BUFFER_PATH, f'cam-1-buffer-{buffer_id}-000.ts')
     
     # Comando para salvar os últimos 30 segundos do buffer
     save_command = [
