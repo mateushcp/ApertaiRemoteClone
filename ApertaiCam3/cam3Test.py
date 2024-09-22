@@ -8,7 +8,7 @@ from gpiozero import Button
 # Configuration
 STATE = "mg"
 CITY = "belohorizonte"
-COURT = "sagradaBeach"
+COURT = "Sagrada Beach"
 BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam3"
