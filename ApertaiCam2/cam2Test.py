@@ -30,8 +30,6 @@ def save_last_30_seconds_from_buffer():
         'ffmpeg',
         '-sseof', '-30',  # Começa 30 segundos antes do final do arquivo
         '-i', input_file_1,
-        '-vf', 'scale=1080:1920',
-        '-c:v', 'libx264', 
         '-c', 'copy',
         output_file_name_1
     ]
@@ -40,8 +38,6 @@ def save_last_30_seconds_from_buffer():
         'ffmpeg',
         '-sseof', '-30',  # Começa 30 segundos antes do final do arquivo
         '-i', input_file_2,
-        '-vf', 'scale=1080:1920',
-        '-c:v', 'libx264', 
         '-c', 'copy',
         output_file_name_2
     ]
