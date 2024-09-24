@@ -20,63 +20,25 @@ from datetime import datetime
 def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
+    output_file_name = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}.mp4")
 
-    # Nomes de arquivos de saída para ambos os buffers
-    output_file_name_1 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}1.mp4")
-    output_file_name_2 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}2.mp4")
-    
-    # Arquivos de entrada para ambos os buffers
-    input_file_1 = os.path.join(BUFFER_PATH, 'cam-1-buffer-1-000.ts')
-    input_file_2 = os.path.join(BUFFER_PATH, 'cam-1-buffer-2-000.ts')
-    
-    # Comandos para salvar os últimos 30 segundos dos buffers
-    save_command_1 = [
+    # Determina qual buffer usar baseando-se no segundo atual
+    seconds = datetime_now.second
+    buffer_id = '2' if seconds < 30 else '1'
+    input_file = os.path.join(BUFFER_PATH, f'cam-1-buffer-{buffer_id}-000.ts')
+
+    # Comando para salvar os últimos 30 segundos do buffer
+    save_command = [
         'ffmpeg',
-        '-sseof', '-30',  # Começa 30 segundos antes do final do arquivo
-        '-i', input_file_1,
+        '-sseof', '-30',  # Start 30 seconds before the end of the file
+        '-i', input_file,
         '-c', 'copy',
-        output_file_name_1
+        output_file_name
     ]
-    
-    save_command_2 = [
-        'ffmpeg',
-        '-sseof', '-30',  # Começa 30 segundos antes do final do arquivo
-        '-i', input_file_2,
-        '-c', 'copy',
-        output_file_name_2
-    ]
-    
-    # Executa os comandos para salvar ambos os buffers
-    subprocess.run(save_command_1, check=True)
-    subprocess.run(save_command_2, check=True)
 
-    print(f"Saved last 30 seconds to {output_file_name_1}")
-    print(f"Saved last 30 seconds to {output_file_name_2}")
-
-    # Função para obter a duração de um vídeo com ffprobe
-    def get_video_duration(file_path):
-        result = subprocess.run(
-            ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
-        )
-        return float(result.stdout)
-
-    # Obtém a duração dos dois vídeos
-    duration_1 = get_video_duration(output_file_name_1)
-    duration_2 = get_video_duration(output_file_name_2)
-    
-    print(f"Duration of {output_file_name_1}: {duration_1} seconds")
-    print(f"Duration of {output_file_name_2}: {duration_2} seconds")
-
-    # Compara as durações e retorna o vídeo com maior duração
-    if duration_1 > duration_2:
-        print(f"Returning {output_file_name_1}")
-        return output_file_name_1
-    else:
-        print(f"Returning {output_file_name_2}")
-        return output_file_name_2
-
+    subprocess.run(save_command, check=True)
+    print(f"Saved last 30 seconds to {output_file_name}")
+    return output_file_name
 
 def upload_to_google_cloud(file_name):
     client = storage.Client.from_service_account_json(CREDENTIALS_PATH)
