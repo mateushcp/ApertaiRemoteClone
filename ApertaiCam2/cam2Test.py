@@ -89,7 +89,7 @@ def main():
             print("Saving last 30 seconds of video...")
             final_video = save_last_30_seconds_from_buffer()
             upload_to_google_cloud(final_video)
-        time.sleep(0.1)
+        time.sleep(2.0)
 
 if __name__ == "__main__":
     main()
