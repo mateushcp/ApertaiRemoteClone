@@ -17,12 +17,12 @@ def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
     output_file_name = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}.mp4")
-    
+
     # Determina qual buffer usar baseando-se no segundo atual
     seconds = datetime_now.second
     buffer_id = '2' if seconds < 30 else '1'
-    input_file = os.path.join(BUFFER_PATH, f'cam-2-buffer-{buffer_id}-000.ts')
-    
+    input_file = os.path.join(BUFFER_PATH, f'cam-1-buffer-{buffer_id}-000.ts')
+
     # Comando para salvar os últimos 30 segundos do buffer
     save_command = [
         'ffmpeg',
@@ -31,7 +31,7 @@ def save_last_30_seconds_from_buffer():
         '-c', 'copy',
         output_file_name
     ]
-    
+
     subprocess.run(save_command, check=True)
     print(f"Saved last 30 seconds to {output_file_name}")
     return output_file_name
