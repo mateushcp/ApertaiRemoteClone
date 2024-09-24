@@ -87,16 +87,13 @@ def upload_to_google_cloud(file_name):
     os.remove(file_name)  # Clean up the local file
 
 def main():
+    button1 = Button(23)
+    
     while True:
-        user_input = input("Press 1 to save video, or q to quit: ")
-        
-        if user_input == '1':
+        if not button1.is_pressed:
             print("Saving last 30 seconds of video...")
             final_video = save_last_30_seconds_from_buffer()
             upload_to_google_cloud(final_video)
-        elif user_input == 'q':
-            print("Exiting program...")
-            break
         time.sleep(0.1)
 
 if __name__ == "__main__":
