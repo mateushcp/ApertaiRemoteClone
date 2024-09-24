@@ -22,8 +22,8 @@ def save_last_30_seconds_from_buffer():
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
 
     # Nomes de arquivos de saída para ambos os buffers
-    output_file_name_1 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}-buffer1.mp4")
-    output_file_name_2 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}-buffer2.mp4")
+    output_file_name_1 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}1.mp4")
+    output_file_name_2 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}2.mp4")
     
     # Arquivos de entrada para ambos os buffers
     input_file_1 = os.path.join(BUFFER_PATH, 'cam-1-buffer-1-000.ts')
