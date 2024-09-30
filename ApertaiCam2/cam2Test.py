@@ -13,6 +13,56 @@ BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam2"
 
+ad_image_files = [
+    f"/home/abidu/Downloads/image1.png",  # Primeira imagem (topo esquerdo)
+    f"/home/abidu/Downloads/image2.png",  # Segunda imagem (rodapé)
+    f"/home/abidu/Downloads/image3.png"   # Terceira imagem (rodapé)
+]
+
+bucket_images = [
+    'mg/belohorizonte/sagradaBeach/cloud-image-1.png',  # Caminho da primeira imagem no bucket
+    'mg/belohorizonte/sagradaBeach/patrocinador-2.png', # Caminho da segunda imagem no bucket
+    'mg/belohorizonte/sagradaBeach/patrocinador-3.png'  # Caminho da terceira imagem no bucket
+]
+
+def download_image_from_bucket_if_not_exists(bucket_name, source_blob_name, destination_file_name, credentials_path):
+    if os.path.exists(destination_file_name):
+        print(f"Imagem {destination_file_name} já existe localmente. Pulando download.")
+        return destination_file_name
+
+    print(f"Baixando {destination_file_name} do bucket.")
+    storage_client = storage.Client.from_service_account_json(credentials_path)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+
+    if blob.exists():
+        blob.download_to_filename(destination_file_name)
+        return destination_file_name
+    else:
+        print(f"Imagem {source_blob_name} não encontrada no bucket.")
+        return None
+
+def convert_video_with_images(input_file, output_file, images):
+    filter_complex = ""
+    inputs = ['-i', input_file]
+    
+    if images[0]:
+        filter_complex += "[1:v]scale=260:260[logo];[0:v][logo]overlay=10:10"
+        inputs += ['-i', images[0]]
+    
+    for i, img in enumerate(images[1:], start=2):
+        if img:
+            inputs += ['-i', img]
+            x_offset = 10 + (i - 2) * 40
+            filter_complex += f";[{i}:v]scale=36:36,format=rgba,colorchannelmixer=aa=0.75[img{i}];[0:v][img{i}]overlay={x_offset}:main_h-46"
+    
+    if not filter_complex:
+        return input_file  # Retorna o vídeo original se não houver imagens de patrocínio
+    
+    command = ['ffmpeg'] + inputs + ['-filter_complex', filter_complex, output_file]
+    subprocess.run(command, check=True)
+    return output_file
+
 def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
@@ -83,12 +133,21 @@ def upload_to_google_cloud(file_name):
 
 def main():
     button1 = Button(26)
+
+    downloaded_images = []
+    for bucket_image, local_image in zip(bucket_images, ad_image_files):
+        downloaded_image = download_image_from_bucket_if_not_exists(AD_IMAGES_BUCKET, bucket_image, local_image, CREDENTIALS_PATH)
+        downloaded_images.append(downloaded_image)
     
     while True:
         if not button1.is_pressed:
             print("Saving last 30 seconds of video...")
             final_video = save_last_30_seconds_from_buffer()
-            upload_to_google_cloud(final_video)
+
+            final_video_with_ads = f"{final_video[:-4]}_ads.mp4"
+            final_video_with_ads = convert_video_with_images(final_video, final_video_with_ads, downloaded_images)
+
+            upload_to_google_cloud(final_video_with_ads)
         time.sleep(2.0)
 
 if __name__ == "__main__":
