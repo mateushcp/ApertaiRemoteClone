@@ -12,6 +12,7 @@ COURT = "Sagrada Beach"
 BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam2"
+AD_IMAGES_BUCKET = "ad-images-214939"
 
 ad_image_files = [
     f"/home/abidu/Downloads/image1.png",  # Primeira imagem (topo esquerdo)
