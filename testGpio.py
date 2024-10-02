@@ -1,21 +1,24 @@
 from gpiozero import Button
+import time
 
-# Liste os GPIOs que você quer verificar
-gpio_pins = [4, 17, 18, 27, 22, 23, 24, 25, 16]  # Adicione os GPIOs que você quer monitorar
+# GPIOs que você quer monitorar
+gpio_pins = [17, 16, 24]  # Monitorar GPIO 17, 18 e 24
 
-# Crie um dicionário para armazenar o estado de cada GPIO
-gpio_states = {}
+# Crie os botões para os GPIOs especificados
+buttons = {pin: Button(pin) for pin in gpio_pins}
 
-for pin in gpio_pins:
-    try:
-        button = Button(pin)
-        if button.is_pressed:
-            gpio_states[pin] = "LOW (sem corrente)"
-        else:
-            gpio_states[pin] = "HIGH (com corrente)"
-    except:
-        gpio_states[pin] = "Não foi possível acessar o GPIO (talvez não esteja configurado)."
+print("Monitorando os estados dos GPIOs 17, 18 e 24 em tempo real...")
 
-# Exibe o estado de cada GPIO
-for pin, state in gpio_states.items():
-    print(f"GPIO {pin}: {state}")
+try:
+    while True:
+        for pin, button in buttons.items():
+            if not button.is_pressed:
+                print(f"GPIO {pin}: Botão PRESSIONADO NA QUADRA pressionado (corrente presente - HIGH)")
+            else:
+                print(f"GPIO {pin}: CORRENTE FECHADA SEM PRESSIONAR (corrente ausente - LOW)")
+        
+        time.sleep(1)  # Aguarda 1 segundo antes de checar novamente
+        print("---")
+        
+except KeyboardInterrupt:
+    print("Encerrando monitoramento...")
