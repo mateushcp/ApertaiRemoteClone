@@ -82,7 +82,7 @@ def upload_to_google_cloud(file_name):
     os.remove(file_name)  # Clean up the local file
 
 def main():
-    button1 = Button(25)
+    button1 = Button(24)
     
     while True:
         if not button1.is_pressed:
