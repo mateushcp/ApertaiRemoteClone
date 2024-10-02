@@ -13,10 +13,6 @@ BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam1"
 
-import os
-import subprocess
-from datetime import datetime
-
 def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
