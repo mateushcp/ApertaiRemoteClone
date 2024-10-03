@@ -13,9 +13,9 @@ try:
     while True:
         for pin, button in buttons.items():
             if not button.is_pressed:
-                print(f"GPIO {pin}: Botão PRESSIONADO NA QUADRA pressionado (corrente presente - HIGH)")
-            else:
-                print(f"GPIO {pin}: CORRENTE FECHADA SEM PRESSIONAR (corrente ausente - LOW)")
+                print(f"GPIO {pin}: Botão PRESSIONADO NA QUADRA pressionado, CORRENTE CORTADA (corrente presente - HIGH)")
+            if button.is_pressed:
+                print(f"GPIO {pin}: CORRENTE FECHADA SEM PRESSIONAR O BOTAO (corrente ausente - LOW)")
         
         time.sleep(1)  # Aguarda 1 segundo antes de checar novamente
         print("---")
