@@ -3,7 +3,7 @@ import subprocess
 import os
 from datetime import datetime
 from google.cloud import storage
-from Sponsor.put_sponsor_and_rotate_video import overlay_images_on_video
+from put_sponsor_and_rotate_video import overlay_images_on_video
 from gpiozero import Button
 
 # Configuration
