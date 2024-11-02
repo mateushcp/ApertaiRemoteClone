@@ -21,7 +21,7 @@ def overlay_images_on_video(input_file, image_files, output_file, positions, ima
             filter_complex += f"[tmp{i}];"
             current_stream = f"[tmp{i}]"
         else:
-            filter_complex += ";"
+            filter_complex += ""
     command = ['ffmpeg'] + inputs + ['-filter_complex', filter_complex, output_file]
     
     try:
