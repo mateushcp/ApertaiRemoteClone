@@ -3,23 +3,29 @@ import subprocess
 import os
 from datetime import datetime
 from google.cloud import storage
+from Sponsor.put_sponsor_and_rotate_video import overlay_images_on_video
 from gpiozero import Button
 
 # Configuration
 STATE = "mg"
 CITY = "belohorizonte"
 COURT = "Sagrada Beach"
+USER = "apertai" # Usuário utilizado na hora de configurar a imagem do Raspberry (pode ser encontrado na tabela "Configurações do cliente")
+# 
+
+BUTTON_COOLDOWN = 2.0
+
 BUCKET_NAME = "videos-283812"
-CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
-BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam1"
+CREDENTIALS_PATH = f"/home/{USER}/Desktop/keys.json"
+BUFFER_PATH = f"/home/{USER}/Desktop/ApertaiRemoteClone/ApertaiCam1"
 
 def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
     datetime_now_formatted = f"{datetime_now.day:02}{datetime_now.month:02}{datetime_now.year}-{datetime_now.hour:02}{datetime_now.minute:02}{datetime_now.second:02}"
 
     # Nomes de arquivos de saída para ambos os buffers
-    output_file_name_1 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}b1.mp4")
-    output_file_name_2 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}b2.mp4")
+    output_file_name_1 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}b1-temporary.mp4")
+    output_file_name_2 = os.path.abspath(f"{STATE}-{CITY}-{COURT}-{datetime_now_formatted}b2-temporary.mp4")
     
     # Arquivos de entrada para ambos os buffers
     input_file_1 = os.path.join(BUFFER_PATH, 'cam-1-buffer-1-000.ts')
@@ -68,10 +74,12 @@ def save_last_30_seconds_from_buffer():
     # Compara as durações e retorna o vídeo com maior duração
     if duration_1 > duration_2:
         print(f"Returning {output_file_name_1}")
+        os.remove(output_file_name_2) # Clean up the local file
         return output_file_name_1
     else:
         print(f"Returning {output_file_name_2}")
-        return output_file_name_2
+        os.remove(output_file_name_1) # Clean up the local file
+        return output_file_name_2 
 
 def upload_to_google_cloud(file_name):
     client = storage.Client.from_service_account_json(CREDENTIALS_PATH)
@@ -87,9 +95,10 @@ def main():
     while True:
         if not button1.is_pressed:
             print("Saving last 30 seconds of video...")
-            final_video = save_last_30_seconds_from_buffer()
-            upload_to_google_cloud(final_video)
-            time.sleep(2.0)
+            temporary_video_file_name = save_last_30_seconds_from_buffer()
+            final_video_file_name = overlay_images_on_video(temporary_video_file_name)
+            upload_to_google_cloud(final_video_file_name)
+            time.sleep(BUTTON_COOLDOWN)
         time.sleep(0.1)
 
 if __name__ == "__main__":
