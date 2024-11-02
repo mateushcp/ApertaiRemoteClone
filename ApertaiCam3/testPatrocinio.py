@@ -37,14 +37,14 @@ def overlay_images_on_video(input_file, image_files, output_file, positions, ima
 
 # Função principal para testar a sobreposição de imagens e rotação
 def main():
-    input_video = '/Users/mateuscoelho/Downloads/WhatsApp Video 2024-10-24 at 10.32.22.mp4'
-    output_video = '/Users/mateuscoelho/Downloads/video_with_image_overlay_and_rotation.mp4'
+    input_video = '/home/apertai/Desktop/ApertaiRemoteClone/mg_belohorizonte_Sagrada Beach_25102024_212652b1.mp4'
+    output_video = '/home/apertai/Desktop/ApertaiRemoteClone/ApertaiCam3/video_with_image_overlay_and_rotation.mp4'
     
     # Caminhos das imagens que serão sobrepostas
     image_files = [
-        '/Users/mateuscoelho/Downloads/image1.png',  # Primeira imagem
-        '/Users/mateuscoelho/Downloads/image2 (1).png',  # Segunda imagem
-        '/Users/mateuscoelho/Downloads/logo-prin-3.png'   # Terceira imagem
+        '/home/apertai/Desktop/image1.png',  # Primeira imagem
+        '/home/apertai/Desktop/image2.png',  # Segunda imagem
+        '/home/apertai/Desktop/image3.png'   # Terceira imagem
     ]
 
     positions = [
