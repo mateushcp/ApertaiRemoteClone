@@ -101,8 +101,7 @@ def main():
             time.sleep(BUTTON_COOLDOWN)
         time.sleep(0.1)
 
-if __name__ == "__main__":
-    main()
+
 
 
 
@@ -164,3 +163,9 @@ def overlay_images_on_video(temporary_video_file_name):
 
 def getFinalVideoName(temporary_video_file_name):
     return temporary_video_file_name.replace("-temporary", "")
+
+
+
+
+if __name__ == "__main__":
+    main()
