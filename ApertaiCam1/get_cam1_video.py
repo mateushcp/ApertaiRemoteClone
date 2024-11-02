@@ -5,6 +5,9 @@ from datetime import datetime
 from google.cloud import storage
 from put_sponsor_and_rotate_video import overlay_images_on_video
 from gpiozero import Button
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Configuration
 STATE = "mg"
