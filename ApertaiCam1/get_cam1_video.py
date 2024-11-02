@@ -134,14 +134,13 @@ def overlay_images_on_video(temporary_video_file_name):
     command = ['ffmpeg', '-threads', '1'] + inputs + ['-filter_complex', filter_complex, output_video_file_name]
     
     try:
-        process = subprocess.Popen(command, check=True) # Troquei para popen para conseguir finalizar o processo
-        process.wait() # Adicionei wait para esperar o processo terminar
-        print(f"Vídeo processado com sucesso: {output_video_file_name}")
+        process = subprocess.Popen(command)  # Sem o parâmetro check
+        process.wait()  # Espera o processo finalizar
     except subprocess.CalledProcessError as e:
         print(f"Erro ao processar o vídeo: {e}")
     finally:
-        if process and process.poll() is None:  # Adicionei para verificar se o processo ainda existe
-            process.terminate() # Adicionei para garantir que o processo foi finalizado
+        if process and process.poll() is None:  # Verifica se o processo ainda está rodando
+            process.terminate()
     
     # Monitoramento de tempo, memória e CPU
     elapsed_time = time.time() - start_time
