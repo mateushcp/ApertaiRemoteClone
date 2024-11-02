@@ -23,9 +23,10 @@ def overlay_images_on_video(input_file, image_files, output_file, positions, ima
         else:
             filter_complex += ""
     command = ['ffmpeg'] + inputs + ['-filter_complex', filter_complex, output_file]
+>>>>>>> 6815cf78e71e9705114f363a6c43afb9116f1bb9
     
     try:
-        subprocess.run(["cpulimit", "-l", "50", "--"] + command, check=True)
+        subprocess.run(command, check=True)
         print(f"Vídeo processado com sucesso: {output_file}")
     except subprocess.CalledProcessError as e:
         print(f"Erro ao processar o vídeo: {e}")
