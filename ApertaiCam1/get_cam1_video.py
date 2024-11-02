@@ -5,6 +5,7 @@ from datetime import datetime
 from google.cloud import storage
 from gpiozero import Button
 import sys
+import psutil
 
 # Configuration
 STATE = "mg"
