@@ -5,7 +5,7 @@ import psutil
 import os
 
 IMAGE_FILES = ["image1.png", "image2.png", "image3.png", "image4.png"]
-POSITIONS = [(10, 10), (35, 1630), (800, 1630), (800, 10)] # Checar posições originais, pq a ultima eu deduzi... !!!!!
+POSITIONS = [(10, 10), (45, 1630), (790, 1630), (790, 15)] # Checar posições originais, pq a ultima eu deduzi... !!!!!
 IMAGE_SIZE = (250, 250)
 OPACITY = 0.8
 
