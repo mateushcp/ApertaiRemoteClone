@@ -49,7 +49,10 @@ def process_and_upload_video():
             # Processa o vídeo com a função overlay_images_on_video
             overlay_images_on_video(
                 video_file,
-                ["/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image1.png", "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image2.png", "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image3.png", "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image4.png"],
+                ["/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image1.png", 
+                 "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image2.png", 
+                 "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image3.png", 
+                 "/home/abidu/Desktop/ApertaiRemoteClone/Sponsor/image4.png"],
                 output_file,
                 [(10, 10), (35, 1630), (800, 1630), (790, 15)],
                 image_size=(250, 250),
@@ -57,17 +60,18 @@ def process_and_upload_video():
             )
             
             # Faz upload para o Google Cloud Storage
-            blob = bucket.blob(os.path.basename(video_file).replace("-", "/"))
-            blob.upload_from_filename(output_file, content_type='application/octet-stream')
-            print(f"Uploaded {output_file} to {BUCKET_NAME}")
-            
-            # Remove os arquivos locais
-            os.remove(video_file)
-            os.remove(output_file)
-            print(f"Processed and deleted {video_file} and {output_file}.")
+            if os.path.exists(output_file):
+                blob = bucket.blob(os.path.basename(video_file).replace("-", "/"))
+                blob.upload_from_filename(output_file, content_type='application/octet-stream')
+                print(f"Uploaded {output_file} to {BUCKET_NAME}")
+                
+                # Remove os arquivos locais
+                os.remove(video_file)
+                os.remove(output_file)
+                print(f"Processed and deleted {video_file} and {output_file}.")
         else:
-            time.sleep(1)  # Aguarda um momento antes de verificar novamente a fila
-
+            print("Nenhum arquivo de vídeo na fila. Verificando novamente em 1 segundo.")
+            time.sleep(3)  # Aguarda um momento antes de verificar novamente a fila
 
 if __name__ == "__main__":
     process_and_upload_video()
