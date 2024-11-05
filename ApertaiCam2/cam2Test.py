@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from google.cloud import storage
 from gpiozero import Button
+import shutil
 
 # Configuration
 STATE = "mg"
@@ -12,6 +13,7 @@ COURT = "Sagrada Beach"
 BUCKET_NAME = "videos-283812"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUFFER_PATH = "/home/abidu/Desktop/ApertaiRemoteClone/ApertaiCam2"
+QUEUE_DIR = "/home/abidu/Desktop/temp/ApertaiRemoteClone"
 
 def save_last_30_seconds_from_buffer():
     datetime_now = datetime.now()
@@ -81,14 +83,20 @@ def upload_to_google_cloud(file_name):
     print(f"Uploaded {file_name} to {BUCKET_NAME}")
     os.remove(file_name)  # Clean up the local file
 
+def save_to_queue(file_path):
+    queue_file_path = os.path.join(QUEUE_DIR, os.path.basename(file_path))
+    shutil.move(file_path, queue_file_path) 
+
 def main():
     button1 = Button(16)
     
     while True:
-        if not button1.is_pressed:
+        user_input = input ( "Comando: ").strip()
+        if not button1.is_pressed or input("Comando (1 para executar, q para sair): ").strip () == '1':
             print("Saving last 30 seconds of video...")
             final_video = save_last_30_seconds_from_buffer()
-            upload_to_google_cloud(final_video)
+            save_to_queue(final_video)
+            # upload_to_google_cloud(final_video)
             time.sleep(2.0)
         time.sleep(0.1)
 
