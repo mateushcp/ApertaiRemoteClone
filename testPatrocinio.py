@@ -22,7 +22,7 @@ def overlay_images_on_video(input_file, image_files, output_file, positions, ima
             current_stream = f"[tmp{i}]"
         else:
             filter_complex += ""
-    command = ['ffmpeg', '-threads', '1'] + inputs + ['-filter_complex', filter_complex, output_file]
+    command = ['ffmpeg', '-threads', '1'] + inputs + ['-filter_complex', filter_complex, '-threads', '1', output_file]
     
     try:
         subprocess.run(command, check=True)
