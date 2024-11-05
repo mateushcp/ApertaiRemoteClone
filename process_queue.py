@@ -9,7 +9,6 @@ BUCKET_NAME = "videos-283812"
 
 def overlay_images_on_video(input_file, image_files, output_file, positions, image_size=(100, 100), opacity=0.7):
     start_time = time.time()
-    process = psutil.Process(os.getpid())
 
     inputs = ['-i', input_file]
     for image in image_files:
