@@ -49,7 +49,7 @@ def process_and_upload_video():
             # Processa o vídeo com a função overlay_images_on_video
             overlay_images_on_video(
                 video_file,
-                ["/path/to/image1.png", "/path/to/image2.png", "/path/to/image3.png"],
+                ["/home/abidu/Desktop/temp/ApertaiRemoteClone/Sponsor/image1.png", "/home/abidu/Desktop/temp/ApertaiRemoteClone/Sponsor/image2.png", "/home/abidu/Desktop/temp/ApertaiRemoteClone/Sponsor/image3.png", "/home/abidu/Desktop/temp/ApertaiRemoteClone/Sponsor/image4.png"],
                 output_file,
                 [(10, 10), (35, 1630), (800, 1630)],
                 image_size=(250, 250),
