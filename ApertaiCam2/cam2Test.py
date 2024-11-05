@@ -109,11 +109,13 @@ def main():
     button1 = Button(16)
     
     while True:
+        
         if not button1.is_pressed:
             print("Saving last 30 seconds of video...")
             final_video = save_last_30_seconds_from_buffer()
+            thumbnail = generate_thumbnail(final_video)
             save_to_queue(final_video)
-             if thumbnail:
+            if thumbnail:
                upload_to_google_cloud(thumbnail)
             time.sleep(2.0)
         time.sleep(0.1)

@@ -3,7 +3,7 @@ import time
 import subprocess
 from google.cloud import storage
 
-QUEUE_DIR = "/home/abidu/Desktop/temp/ApertaiRemoteClone"
+QUEUE_DIR = "/home/abidu/Desktop/ApertaiRemoteClone"
 CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUCKET_NAME = "videos-283812"
 
