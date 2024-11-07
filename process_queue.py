@@ -8,8 +8,6 @@ CREDENTIALS_PATH = "/home/abidu/Desktop/keys.json"
 BUCKET_NAME = "videos-283812"
 
 def overlay_images_on_video(input_file, image_files, output_file, positions, image_size=(100, 100), opacity=0.7):
-    start_time = time.time()
-
     inputs = ['-i', input_file]
     for image in image_files:
         if image:
@@ -25,12 +23,15 @@ def overlay_images_on_video(input_file, image_files, output_file, positions, ima
         else:
             filter_complex += ""
     command = ['ffmpeg', '-threads', '1'] + inputs + ['-filter_complex', filter_complex, '-threads', '2', output_file]
-    
+
     try:
         subprocess.run(command, check=True)
         print(f"Vídeo processado com sucesso: {output_file}")
     except subprocess.CalledProcessError as e:
         print(f"Erro ao processar o vídeo: {e}")
+        if "moov atom not found" in str(e):
+            print("Vídeo corrompido ou sem o moov atom. Pulando o arquivo.")
+        raise  # Relança a exceção para ser tratada no nível superior
 
 def process_and_upload_video():
     client = storage.Client.from_service_account_json(CREDENTIALS_PATH)
